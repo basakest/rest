@@ -8,6 +8,7 @@ class Category{
     public $name;
     public $description;
     public $created;
+    public $num_per_page = 5;
  
     public function __construct($db){
         $this->conn = $db;
@@ -88,5 +89,43 @@ class Category{
         $stmt->execute();
         //return $stmt;
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function search()
+    {
+        $query = "select id, name, description from {$this->table_name} where name like :keywords or description like :keywords";
+        $stmt = $this->conn->prepare($query);
+        $keywords = '%' . $this->keywords . '%';
+        $stmt->bindParam(':keywords', $keywords);
+        //$stmt->bindParam(':keywords', '%' . $keywords . '%');
+        $stmt->execute();
+        try {
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $res;
+        } catch (PDOException $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function pagination()
+    {
+        $query = "select * 
+                  from {$this->table_name} 
+                  order by id
+                  limit :limit 
+                  offset :offset";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':limit', $this->num_per_page,  PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $this->offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getTotalNum()
+    {
+        $query = "select count(*) as total from {$this->table_name}";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
