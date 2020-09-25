@@ -18,7 +18,7 @@ $product = new Product($db);
 // get the post data
 $data = json_decode(file_get_contents("php://input"));
  
-// make the items in data is not empty
+// make sure the items in data is not empty
 if (
     !empty($data->name) &&
     !empty($data->price) &&
